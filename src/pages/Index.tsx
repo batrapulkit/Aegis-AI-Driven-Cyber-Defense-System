@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { AegisSidebar } from "@/components/AegisSidebar";
 import { HeroStats } from "@/components/HeroStats";
 import { LiveInterceptConsole } from "@/components/LiveInterceptConsole";
@@ -111,7 +112,12 @@ const Index = () => {
           onCollapsedChange={setSidebarCollapsed}
         />
 
-        <main className="flex-1 p-6 lg:p-8 overflow-auto">
+        <main
+          className={cn(
+            "flex-1 p-6 lg:p-8 overflow-auto transition-all duration-300",
+            sidebarCollapsed ? "ml-20" : "ml-64"
+          )}
+        >
           {activeSection === "overview" && (
             <>
               <header className="mb-6">
