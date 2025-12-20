@@ -1,0 +1,7 @@
+project_id = "krnbbjsbjkaollbtzdbl"
+
+[functions.analyze-prompt]
+verify_jwt = false
+
+[functions.scan-file]
+verify_jwt = false
