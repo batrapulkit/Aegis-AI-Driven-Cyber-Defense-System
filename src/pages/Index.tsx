@@ -6,12 +6,12 @@ import { LiveInterceptConsole } from "@/components/LiveInterceptConsole";
 import { LiveFeed } from "@/components/LiveFeed";
 import { ThreatAnalyticsChart } from "@/components/ThreatAnalyticsChart";
 import { FileScanner } from "@/components/FileScanner";
-import { GlobalThreatMap } from "@/components/GlobalThreatMap";
+import { ThreatMap } from "@/components/Dashboard/ThreatMap";
 import { ThreatsSection } from "@/components/ThreatsSection";
 import { SettingsSection } from "@/components/SettingsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
-import { VoiceControl } from "@/components/VoiceControl";
+import { VoiceWidget } from "@/components/Voice/VoiceWidget";
 import { toast } from "sonner";
 import { StartupSequence } from "@/components/StartupSequence";
 
@@ -101,8 +101,8 @@ const Index = () => {
         />
       </Helmet>
 
-      {/* Voice Control Overlay */}
-      <VoiceControl onCommand={handleVoiceCommand} />
+      {/* Voice Control Overlay (Jarvis Style) */}
+      <VoiceWidget onCommandDetected={handleVoiceCommand} />
 
       <div className="flex min-h-screen w-full bg-background cyber-grid">
         <AegisSidebar
@@ -148,9 +148,9 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Global Threat Map - Compact but full width */}
+              {/* Global Threat Map - Realtime & Interactive */}
               <section className="mb-6 animate-fade-in">
-                <GlobalThreatMap scanningTrigger={voiceScanTrigger} />
+                <ThreatMap />
               </section>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

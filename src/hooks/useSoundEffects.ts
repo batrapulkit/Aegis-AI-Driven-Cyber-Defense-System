@@ -1,12 +1,30 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 export const useSoundEffects = () => {
+    const audioContextRef = useRef<AudioContext | null>(null);
+
+    // Initialize or get context
+    const getContext = useCallback(() => {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return null;
+
+        if (!audioContextRef.current) {
+            audioContextRef.current = new AudioContext();
+        }
+
+        // Resume if suspended (browser autoplay policy)
+        if (audioContextRef.current.state === 'suspended') {
+            audioContextRef.current.resume().catch(e => console.error("Audio resume failed", e));
+        }
+
+        return audioContextRef.current;
+    }, []);
+
     // Helper to create oscillator sounds
     const playTone = useCallback((freq: number, type: OscillatorType, duration: number, vol = 0.1) => {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+        const ctx = getContext();
+        if (!ctx) return;
 
-        const ctx = new AudioContext();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
@@ -21,7 +39,7 @@ export const useSoundEffects = () => {
 
         osc.start();
         osc.stop(ctx.currentTime + duration);
-    }, []);
+    }, [getContext]);
 
     const playHover = useCallback(() => {
         playTone(400, 'sine', 0.1, 0.05); // Subtle high blip
@@ -32,10 +50,9 @@ export const useSoundEffects = () => {
     }, [playTone]);
 
     const playScan = useCallback(() => {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+        const ctx = getContext();
+        if (!ctx) return;
 
-        const ctx = new AudioContext();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
@@ -51,13 +68,12 @@ export const useSoundEffects = () => {
 
         osc.start();
         osc.stop(ctx.currentTime + 1);
-    }, []);
+    }, [getContext]);
 
     const playAlert = useCallback(() => {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+        const ctx = getContext();
+        if (!ctx) return;
 
-        const ctx = new AudioContext();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
@@ -73,7 +89,7 @@ export const useSoundEffects = () => {
 
         osc.start();
         osc.stop(ctx.currentTime + 0.5);
-    }, []);
+    }, [getContext]);
 
     return { playHover, playClick, playScan, playAlert };
 };

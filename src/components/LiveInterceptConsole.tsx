@@ -80,6 +80,22 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
         prompt: data.prompt,
       });
 
+      // FAIL-SAFE: If backend failed to save (Demo Mode), save from client
+      if (data.id && data.id.toString().startsWith('fallback-')) {
+        console.log("Saving fallback log from client...");
+        const { error: dbError } = await supabase.from('scan_logs').insert({
+          prompt_text: analysisText,
+          verdict: data.verdict,
+          risk_score: data.riskScore,
+          threat_type: data.threatType,
+          attack_category: data.attackCategory || "None",
+          // Mock coordinates for map
+          latitude: (Math.random() * 140) - 70,
+          longitude: (Math.random() * 360) - 180
+        });
+        if (dbError) console.error("Client cleanup log failed", dbError);
+      }
+
       onScanComplete();
 
       if (data.verdict !== "SAFE") {
@@ -97,7 +113,7 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
       console.error("Error analyzing prompt:", error);
       toast({
         title: "Error",
-        description: "Failed to analyze prompt",
+        description: error instanceof Error ? error.message : "Failed to analyze prompt",
         variant: "destructive",
       });
     } finally {
@@ -176,7 +192,7 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
                 <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-neon-purple border-b-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground mb-1">Analyzing with Gemini AI...</p>
+                <p className="text-sm font-medium text-foreground mb-1">Analyzing with Azure AI...</p>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-neon-blue via-neon-purple to-neon-green animate-gradient-shift" style={{ backgroundSize: '200% 100%', width: '100%' }} />
                 </div>

@@ -1,6 +1,7 @@
-import { Shield, Activity, AlertTriangle, Settings, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { Shield, Activity, AlertTriangle, Settings, ChevronLeft, ChevronRight, Zap, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useTacticalMode } from "@/contexts/TacticalContext";
 
 interface NavItem {
   icon: React.ElementType;
@@ -23,6 +24,7 @@ export const AegisSidebar = ({
   onCollapsedChange
 }: AegisSidebarProps) => {
   const { playHover, playClick } = useSoundEffects();
+  const { isTacticalMode, toggleTacticalMode } = useTacticalMode();
 
   const navItems: NavItem[] = [
     { icon: Activity, label: "System Status", id: "overview" },
@@ -101,7 +103,26 @@ export const AegisSidebar = ({
         ))}
       </div>
 
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-white/5 space-y-2">
+        {/* Tactical Mode Toggle */}
+        <button
+          onClick={() => {
+            toggleTacticalMode();
+            playClick();
+          }}
+          className={cn(
+            "w-full flex items-center p-2 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-all group",
+            collapsed ? "justify-center" : "justify-start gap-3 px-3"
+          )}
+          title="Toggle Tactical Mode (High Contrast)"
+        >
+          {isTacticalMode ? (
+            <Eye className="w-5 h-5 text-neon-green group-hover:scale-110 transition-transform" />
+          ) : (
+            <EyeOff className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          )}
+          {!collapsed && <span className="font-medium text-sm">Tactical Mode</span>}
+        </button>
         <button
           onClick={() => {
             onCollapsedChange(!collapsed);

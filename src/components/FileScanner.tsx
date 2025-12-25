@@ -57,6 +57,23 @@ export const FileScanner = () => {
 
       setScanResult(data);
 
+      // PERSIST LOG TO DB (Critical for Map/Live Feed)
+      try {
+        const { error: dbError } = await supabase.from('scan_logs').insert({
+          prompt_text: `FILE: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
+          verdict: data.isClean ? "SAFE" : "BLOCKED",
+          risk_score: data.isClean ? 0 : 85,
+          threat_type: data.isClean ? "None" : "Malware Detected",
+          attack_category: data.isClean ? "None" : "Malware",
+          // Mock coordinates for map (optional, DB has defaults or mapped in Map component)
+          latitude: (Math.random() * 140) - 70,
+          longitude: (Math.random() * 360) - 180
+        });
+        if (dbError) console.error("Failed to persist file log", dbError);
+      } catch (err) {
+        console.error("Log persistence skipped", err);
+      }
+
       if (data.isClean) {
         toast.success('File is clean - no threats detected');
       } else {
