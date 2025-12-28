@@ -1,18 +1,25 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { verifyAuth } from "../_shared/auth.ts";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin') || '';
+  const corsHeaders = getCorsHeaders(origin);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // 1. Authentication Check
+    const user = await verifyAuth(req);
+
+    // 2. Rate Limiting Check
+    await checkRateLimit(req, user.id);
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const clientKey = formData.get('x_api_key') as string;
@@ -138,7 +145,18 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error: unknown) {
+
+  } catch (error: any) {
+    const isSecurityError = error.message === 'Rate limit exceeded' || error.message === 'Invalid or expired token' || error.message === 'Missing Authorization header';
+    const status = error.message === 'Rate limit exceeded' ? 429 : (error.message.includes('token') || error.message.includes('Authorization') ? 401 : 500);
+
+    if (isSecurityError) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status, headers: { ...getCorsHeaders(req.headers.get('Origin') || ''), 'Content-Type': 'application/json' } }
+      );
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('CRITICAL FAILURE in scan-file:', error);
 
@@ -150,16 +168,9 @@ serve(async (req) => {
     let isMockThreat = false;
     let fileName = "unknown_file";
     try {
-      const formData = await req.formData().catch(() => null);
-      if (formData) {
-        const file = formData.get('file') as File;
-        if (file) {
-          fileName = file.name;
-          if (file.name.toLowerCase().includes('virus') || file.name.toLowerCase().includes('malware') || file.name.toLowerCase().includes('eicar')) {
-            isMockThreat = true;
-          }
-        }
-      }
+      // Re-read form data might fail if stream consumed?
+      // Actually we can't re-read easily if we didn't store it. 
+      // But we can just default safely.
     } catch (e) { }
 
     const fallbackResponse = {
@@ -180,7 +191,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(fallbackResponse), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...getCorsHeaders(req.headers.get('Origin') || ''), 'Content-Type': 'application/json' }
     });
   }
 });
