@@ -7,6 +7,7 @@ import { LiveFeed } from "@/components/LiveFeed";
 import { ThreatAnalyticsChart } from "@/components/ThreatAnalyticsChart";
 import { FileScanner } from "@/components/FileScanner";
 import { ThreatMap } from "@/components/Dashboard/ThreatMap";
+import { WebScanner } from "@/components/WebScanner";
 import { ThreatsSection } from "@/components/ThreatsSection";
 import { SettingsSection } from "@/components/SettingsSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,6 +82,10 @@ const Index = () => {
       setActiveSection("settings");
       playClick();
       toast.success("Voice Command: Navigating to Settings");
+    } else if (command.includes("scan website") || command.includes("web defense")) {
+      setActiveSection("web_defense");
+      playClick();
+      toast.success("Voice Command: Initiating Web Defense");
     }
   };
 
@@ -160,11 +165,13 @@ const Index = () => {
             </>
           )}
 
+          {activeSection === "web_defense" && <WebScanner />}
           {activeSection === "threats" && <ThreatsSection />}
           {activeSection === "settings" && <SettingsSection />}
 
-          <footer className="mt-8 pt-6 border-t border-border/50">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <footer className="mt-auto border-t border-border/50">
+            {/* CyberNewsTicker removed from here as it's now in ThreatMap */}
+            <div className="p-6 flex items-center justify-between text-sm text-muted-foreground bg-background/50 backdrop-blur">
               <div className="flex flex-col gap-1">
                 <p className="font-display tracking-wider">Aegis by Securityella — Microsoft Imagine Cup 2026</p>
                 <p className="text-xs text-neon-blue">Powered by Microsoft Azure • Azure OpenAI • Static Web Apps</p>

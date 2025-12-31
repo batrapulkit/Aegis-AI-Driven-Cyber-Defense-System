@@ -77,6 +77,8 @@
 
   body {
     @apply bg-background text-foreground font-mono antialiased;
+    /* Clean, deep space background */
+    background: radial-gradient(circle at 50% 0%, #0d121f 0%, #050a14 100%);
   }
 
   /* Custom scrollbar */
@@ -448,31 +450,42 @@
 
 /* --- TACTICAL MODE (Accessibility / High Contrast) --- */
 body.tactical-mode {
-  --background: 0 0% 100%; /* Pure White Background */
-  --foreground: 0 0% 0%;   /* Pure Black Text */
-  
+  --background: 0 0% 100%;
+  /* Pure White Background */
+  --foreground: 0 0% 0%;
+  /* Pure Black Text */
+
   /* Override Neons with High Contrast Colors */
-  --neon-green: 142 76% 36%;  /* Dark Green #16a34a */
-  --neon-red: 0 72% 51%;      /* Dark Red #dc2626 */
-  --neon-blue: 221 83% 53%;   /* Dark Blue #2563eb */
-  --neon-purple: 271 81% 56%; /* Dark Purple #9333ea */
-  --neon-cyan: 199 89% 48%;   /* Dark Cyan #0891b2 */
-  --neon-orange: 24 94% 50%;  /* Dark Orange #ea580c */
+  --neon-green: 142 76% 36%;
+  /* Dark Green #16a34a */
+  --neon-red: 0 72% 51%;
+  /* Dark Red #dc2626 */
+  --neon-blue: 221 83% 53%;
+  /* Dark Blue #2563eb */
+  --neon-purple: 271 81% 56%;
+  /* Dark Purple #9333ea */
+  --neon-cyan: 199 89% 48%;
+  /* Dark Cyan #0891b2 */
+  --neon-orange: 24 94% 50%;
+  /* Dark Orange #ea580c */
 
   /* Remove all blurs and glows */
-  --radius: 0px; /* Sharp corners */
+  --radius: 0px;
+  /* Sharp corners */
 }
 
 body.tactical-mode .cyber-grid,
 body.tactical-mode .cyber-dots {
   background-image: none !important;
-  background-color: #f8fafc; /* Slate-50 */
+  background-color: #f8fafc;
+  /* Slate-50 */
 }
 
 body.tactical-mode * {
   box-shadow: none !important;
   text-shadow: none !important;
-  font-family: 'Space Grotesk', system-ui, sans-serif !important; /* Readable Font */
+  font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  /* Readable Font */
   letter-spacing: normal !important;
 }
 
@@ -482,7 +495,8 @@ body.tactical-mode .border-t,
 body.tactical-mode .border-b,
 body.tactical-mode .border-l,
 body.tactical-mode .border-r {
-  border-color: #e2e8f0 !important; /* Slate-200 */
+  border-color: #e2e8f0 !important;
+  /* Slate-200 */
   border-width: 1px !important;
 }
 
@@ -496,20 +510,22 @@ body.tactical-mode .bg-card\/50 {
 body.tactical-mode .cyber-card,
 body.tactical-mode .cyber-card-premium {
   background: #ffffff;
-  border: 2px solid #0f172a; /* Slate-900 Strong Border */
+  border: 2px solid #0f172a;
+  /* Slate-900 Strong Border */
   border-radius: 4px;
 }
 
-body.tactical-mode h1, 
-body.tactical-mode h2, 
+body.tactical-mode h1,
+body.tactical-mode h2,
 body.tactical-mode h3 {
   color: #0f172a !important;
   font-weight: 800 !important;
   text-transform: uppercase;
 }
 
-body.tactical-mode p, 
-body.tactical-mode span, 
+body.tactical-mode p,
+body.tactical-mode span,
 body.tactical-mode div {
-  color: #334155; /* Slate-700 High Contrast Text */
+  color: #334155;
+  /* Slate-700 High Contrast Text */
 }

@@ -33,7 +33,9 @@ export const StartupSequence = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <div className="fixed inset-0 z-[100] bg-[#050a14] flex flex-col items-center justify-center font-mono">
-            <div className="w-full max-w-lg p-8">
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
+
+            <div className="w-full max-w-lg p-8 relative z-10">
                 <div className="flex items-center justify-center mb-12">
                     <div className="relative">
                         <Shield className="w-16 h-16 text-neon-green animate-pulse" />

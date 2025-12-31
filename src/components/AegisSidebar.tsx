@@ -1,4 +1,5 @@
-import { Shield, Activity, AlertTriangle, Settings, ChevronLeft, ChevronRight, Zap, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, Activity, AlertTriangle, Settings, ChevronLeft, ChevronRight, Zap, Eye, EyeOff, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useTacticalMode } from "@/contexts/TacticalContext";
@@ -26,9 +27,45 @@ export const AegisSidebar = ({
   const { playHover, playClick } = useSoundEffects();
   const { isTacticalMode, toggleTacticalMode } = useTacticalMode();
 
+  const SentinelLog = () => {
+    const [logs, setLogs] = useState<string[]>(["Initializing Sentinel...", "Connecting to secure gateway..."]);
+
+    useEffect(() => {
+      const tasks = [
+        "Scanning port 443 [HTTPS]",
+        "Packet analysis: 128kb [OK]",
+        "Updating heuristics DB...",
+        "Checking local integrity...",
+        "Verifying SSL certificates...",
+        "Ping: 24ms to gateway",
+        "Encrypting output stream...",
+        "Analyzing memory heap...",
+        "Garbage collection [OK]",
+        "Threat signature match: 0",
+        "Firewall rule #882 active"
+      ];
+
+      const interval = setInterval(() => {
+        const task = tasks[Math.floor(Math.random() * tasks.length)];
+        setLogs(prev => [...prev.slice(-4), `> ${task}`]);
+      }, 800);
+
+      return () => clearInterval(interval);
+    }, []);
+
+    return (
+      <div className="flex flex-col gap-1 text-neon-green/80">
+        {logs.map((log, i) => (
+          <div key={i} className="truncate animate-fade-in">{log}</div>
+        ))}
+      </div>
+    );
+  };
+
   const navItems: NavItem[] = [
     { icon: Activity, label: "System Status", id: "overview" },
     { icon: AlertTriangle, label: "Threat Intel", id: "threats" },
+    { icon: Globe, label: "Web Defense", id: "web_defense" },
     { icon: Settings, label: "Configuration", id: "settings" },
   ];
 
@@ -104,6 +141,22 @@ export const AegisSidebar = ({
       </div>
 
       <div className="p-4 border-t border-white/5 space-y-2">
+        {/* Active Sentinel Terminal */}
+        {!collapsed && (
+          <div className="mb-4 bg-black/40 rounded-lg p-3 border border-white/5 font-mono text-[10px] h-24 overflow-hidden relative">
+            <div className="absolute top-2 right-2 flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/50" />
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
+            </div>
+            <div className="text-muted-foreground mb-2 flex items-center gap-2">
+              <Activity className="w-3 h-3 text-neon-green animate-pulse" />
+              <span className="uppercase tracking-wider">System Log</span>
+            </div>
+            <SentinelLog />
+          </div>
+        )}
+
         {/* Tactical Mode Toggle */}
         <button
           onClick={() => {

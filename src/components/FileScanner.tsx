@@ -109,23 +109,23 @@ export const FileScanner = () => {
   };
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <Shield className="w-5 h-5 text-primary" />
+    <div className="cyber-card-premium border-glow-blue relative overflow-hidden h-full flex flex-col">
+      <div className="flex items-center gap-3 mb-6 relative z-10">
+        <div className="w-12 h-12 rounded-xl bg-neon-blue/20 flex items-center justify-center">
+          <Shield className="w-6 h-6 text-neon-blue" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">File Virus Scanner</h3>
-          <p className="text-sm text-muted-foreground">Upload files to scan for malware</p>
+          <h3 className="font-display font-bold text-xl text-foreground uppercase tracking-wider">File Sentinel</h3>
+          <p className="text-xs text-muted-foreground">Deep Packet Inspection & Heuristics</p>
         </div>
       </div>
 
       {/* Upload Zone */}
       <div
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive
-          ? 'border-primary bg-primary/5'
-          : 'border-border/50 hover:border-primary/50'
-          } ${isScanning ? 'pointer-events-none opacity-50' : ''}`}
+        className={`relative flex-1 border-2 border-dashed rounded-xl p-8 text-center transition-all overflow-hidden group ${dragActive
+          ? 'border-neon-blue bg-neon-blue/5'
+          : 'border-white/10 hover:border-neon-blue/50'
+          } ${isScanning ? 'pointer-events-none' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -134,99 +134,98 @@ export const FileScanner = () => {
         <input
           type="file"
           id="file-upload"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
           onChange={handleFileInput}
           disabled={isScanning}
         />
 
+        {/* Scanning Laser Animation */}
+        {isScanning && (
+          <div className="absolute inset-0 z-20 pointer-events-none">
+            <div className="w-full h-1 bg-neon-blue shadow-[0_0_15px_rgba(56,189,248,0.8)] animate-scan-vertical" />
+            <div className="absolute inset-0 bg-neon-blue/10 animate-pulse" />
+          </div>
+        )}
+
         {isScanning ? (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="text-muted-foreground">Scanning file for threats...</p>
-            <p className="text-xs text-muted-foreground">This may take up to a minute</p>
+          <div className="flex flex-col items-center justify-center h-full gap-4 relative z-10">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-2 border-neon-blue border-t-transparent animate-spin" />
+              <div className="absolute inset-0 w-16 h-16 rounded-full border-2 border-neon-purple border-b-transparent animate-spin-reverse opacity-70" />
+              <Shield className="absolute inset-0 m-auto w-6 h-6 text-neon-blue animate-pulse" />
+            </div>
+            <div>
+              <p className="font-display font-bold text-lg text-neon-blue animate-pulse">ANALYZING SIGNATURES</p>
+              <p className="text-xs text-muted-foreground font-mono mt-1">Comparing against 70+ threat engines...</p>
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3">
-            <Upload className="w-12 h-12 text-muted-foreground" />
-            <p className="text-foreground font-medium">
-              Drop a file here or click to upload
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Supports any file type up to 32MB
-            </p>
+          <div className="flex flex-col items-center justify-center h-full gap-4 relative z-10">
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/10 group-hover:border-neon-blue/50">
+              <Upload className="w-8 h-8 text-muted-foreground group-hover:text-neon-blue transition-colors" />
+            </div>
+            <div>
+              <p className="font-display font-bold text-lg text-foreground">
+                DROP FILES TO SCAN
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">
+                Drag & drop executables, documents, or archives for instant chemical analysis.
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Scan Result */}
+      {/* Scan Result Overlay */}
       {scanResult && (
-        <div
-          className={`mt-6 p-4 rounded-xl border ${scanResult.isClean
-            ? 'bg-green-500/10 border-green-500/30'
-            : 'bg-destructive/10 border-destructive/30'
-            }`}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              {scanResult.isClean ? (
-                <FileCheck className="w-6 h-6 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-6 h-6 text-destructive" />
-              )}
-              <div>
-                <p className="font-medium text-foreground">{scanResult.fileName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(scanResult.fileSize / 1024).toFixed(2)} KB
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={clearResult}
-              className="p-1 hover:bg-background/50 rounded"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
+        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur-xl p-6 flex flex-col animate-in slide-in-from-bottom-5">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="font-display font-bold text-lg text-foreground">Analysis Report</h4>
+            <button onClick={clearResult} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-background/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-destructive">
-                {scanResult.stats.malicious}
-              </p>
-              <p className="text-xs text-muted-foreground">Malicious</p>
-            </div>
-            <div className="bg-background/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-yellow-500">
-                {scanResult.stats.suspicious}
-              </p>
-              <p className="text-xs text-muted-foreground">Suspicious</p>
-            </div>
-            <div className="bg-background/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-green-500">
-                {scanResult.stats.harmless}
-              </p>
-              <p className="text-xs text-muted-foreground">Harmless</p>
-            </div>
-            <div className="bg-background/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-muted-foreground">
-                {scanResult.stats.undetected}
-              </p>
-              <p className="text-xs text-muted-foreground">Undetected</p>
-            </div>
+          <div className={`flex-1 rounded-xl border p-6 flex flex-col items-center justify-center text-center mb-4 ${scanResult.isClean
+              ? 'bg-neon-blue/5 border-neon-blue/30'
+              : 'bg-red-500/10 border-red-500/30'
+            }`}>
+            {scanResult.isClean ? (
+              <>
+                <div className="w-20 h-20 rounded-full bg-neon-blue/20 flex items-center justify-center mb-4">
+                  <FileCheck className="w-10 h-10 text-neon-blue" />
+                </div>
+                <h2 className="text-2xl font-bold text-neon-blue mb-1">THREAT NEUTRALIZED</h2>
+                <p className="text-sm text-neon-blue/70 font-mono">File Signature Verified Safe</p>
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-4 animate-pulse">
+                  <AlertTriangle className="w-10 h-10 text-red-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-red-500 mb-1">MALWARE DETECTED</h2>
+                <p className="text-sm text-red-500/70 font-mono">Immediate Quarantine Recommended</p>
+              </>
+            )}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <span
-              className={`px-3 py-1 rounded-full font-medium ${scanResult.isClean
-                ? 'bg-green-500/20 text-green-500'
-                : 'bg-destructive/20 text-destructive'
-                }`}
-            >
-              {scanResult.verdict}
-            </span>
-            <span className="text-muted-foreground">
-              Scanned: {new Date(scanResult.scanDate).toLocaleTimeString()}
-            </span>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="bg-white/5 rounded-lg p-2 text-center border border-white/5">
+              <div className="text-red-500 font-bold text-xl">{scanResult.stats.malicious}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Malicious</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2 text-center border border-white/5">
+              <div className="text-orange-400 font-bold text-xl">{scanResult.stats.suspicious}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Suspicious</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2 text-center border border-white/5">
+              <div className="text-neon-blue font-bold text-xl">{scanResult.stats.harmless}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Safe</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2 text-center border border-white/5">
+              <div className="text-slate-400 font-bold text-xl">{scanResult.stats.undetected}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Unknown</div>
+            </div>
           </div>
         </div>
       )}

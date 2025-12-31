@@ -135,8 +135,11 @@ export function HeroStats({ totalScans, threatsBlocked }: HeroStatsProps) {
             </div>
           </div>
           <p className="stat-label mb-1">System Status</p>
-          <p className="font-display font-bold text-2xl text-neon-purple text-glow-purple tracking-wide">
-            OPERATIONAL
+          <p className={cn(
+            "font-display font-bold text-2xl tracking-wide transition-colors duration-500",
+            threatsBlocked > 10 ? "text-neon-red text-glow-red animate-pulse" : "text-neon-purple text-glow-purple"
+          )}>
+            {threatsBlocked > 10 ? "UNDER ATTACK" : "OPERATIONAL"}
           </p>
           <div className="mt-3 space-y-1.5">
             <div className="flex justify-between text-xs">
