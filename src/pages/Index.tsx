@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { LogAnalysis } from "@/components/LogAnalysis";
+import { SecurityCopilot } from "@/components/SecurityCopilot";
 import { AegisSidebar } from "@/components/AegisSidebar";
 import { HeroStats } from "@/components/HeroStats";
 import { LiveInterceptConsole } from "@/components/LiveInterceptConsole";
 import { LiveFeed } from "@/components/LiveFeed";
 import { ThreatAnalyticsChart } from "@/components/ThreatAnalyticsChart";
-import { FileScanner } from "@/components/FileScanner";
 import { ThreatMap } from "@/components/Dashboard/ThreatMap";
 import { WebScanner } from "@/components/WebScanner";
 import { ThreatsSection } from "@/components/ThreatsSection";
@@ -141,16 +142,21 @@ const Index = () => {
                 <HeroStats totalScans={totalScans} threatsBlocked={threatsBlocked} />
               </section>
 
+
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-3">
                   <LiveInterceptConsole
                     onScanComplete={handleScanComplete}
                     autoRunTrigger={voiceScanTrigger}
                   />
                 </div>
-                <div className="h-full">
-                  <FileScanner />
-                </div>
+              </div>
+
+              {/* New Security Tools Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <LogAnalysis />
+                <SecurityCopilot />
               </div>
 
               {/* Global Threat Map - Realtime & Interactive */}

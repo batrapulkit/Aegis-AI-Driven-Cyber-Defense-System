@@ -54,21 +54,20 @@ serve(async (req) => {
             }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 });
         }
 
-        // 2. TECH STACK DETECTION
+        // 2. TECH STACK & AI DETECTION
         const lowerHtml = htmlContent.toLowerCase();
         const signatures = {
-            'WordPress': /wp-content|wordpress/i,
-            'React': /react|next\.js|_next|data-reactroot/i,
-            'Vue.js': /vue|nuxt/i,
-            'Bootstrap': /bootstrap/i,
+            'LangChain': /langchain/i,
+            'OpenAI API': /openai|sk-proj/i,
+            'Vercel AI SDK': /vercel\/ai|ai-sdk/i,
+            'HuggingFace': /huggingface|hf-hub/i,
+            'Pinecone': /pinecone/i,
+            'Replicate': /replicate\.com/i,
+            'Anthropic': /anthropic/i,
+            'React': /react|next\.js|_next/i,
             'Tailwind CSS': /tailwindcss/i,
-            'jQuery': /jquery/i,
-            'Cloudflare': /cloudflare/i,
-            'Shopify': /myshopify/i,
-            'Stripe': /stripe\.com/i,
-            'Google Analytics': /google-analytics|gtag/i,
-            'ASP.NET': /asp\.net|__viewstate/i,
-            'Django': /csrfmiddlewaretoken/i
+            'TensorFlow.js': /tensorflow/i,
+            'PyTorch': /pytorch/i
         };
 
         for (const [tech, regex] of Object.entries(signatures)) {
@@ -77,16 +76,14 @@ serve(async (req) => {
             }
         }
 
-        // Check headers for tech too
+        // Check headers
         const headers = response.headers;
         if (headers.get('server')) techStack.push(`Server: ${headers.get('server')}`);
-        if (headers.get('x-powered-by')) techStack.push(headers.get('x-powered-by'));
 
-        // 3. GEOLOCATION & RECON (Server-side)
+        // 3. GEOLOCATION (Keep existing logic)
         try {
             const dnsRes = await fetch(`https://dns.google/resolve?name=${domain}`);
             const dnsJson = await dnsRes.json();
-
             if (dnsJson.Answer && dnsJson.Answer.length > 0) {
                 const ipRecord = dnsJson.Answer.find((r: any) => r.type === 1);
                 if (ipRecord) {
@@ -104,84 +101,95 @@ serve(async (req) => {
             console.error("GeoIP lookup failed:", geoError);
         }
 
-        // 4. VULNERABILITY CHECKS (Refined Severity & Realism)
+        // 4. REAL AI VULNERABILITY CHECKS
 
-        // HSTS (High Risk) - Check final URL protocol
-        const isHttps = response.url.startsWith('https:');
-        if (isHttps && !headers.get('strict-transport-security')) {
+        // A. Exposed API Keys (High Risk)
+        const openAIKeyMatch = htmlContent.match(/sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}/); // Basic heuristics to avoid false positives on truncated keys
+        // We use a broader regex for detection but mask it in output
+        if (/sk-proj-[a-zA-Z0-9]{20,}/.test(htmlContent) || /sk-[a-zA-Z0-9]{48}/.test(htmlContent)) {
             vulnerabilities.push({
                 type: 'high',
+                name: 'Exposed OpenAI API Key',
+                description: 'A potential OpenAI API key was found in the client-side code. This can lead to quota theft.',
+                fix: 'Rotate the key immediately and move all API calls to a backend proxy.'
+            });
+        }
+
+        if (/hf_[a-zA-Z0-9]{20,}/.test(htmlContent)) {
+            vulnerabilities.push({
+                type: 'high',
+                name: 'Exposed HuggingFace Token',
+                description: 'A HuggingFace Access Token was found in the source code.',
+                fix: 'Revoke the token and use backend-only authentication.'
+            });
+        }
+
+        // B. Robots.txt Analysis (Privacy Risk)
+        try {
+            const robotsRes = await fetch(`${new URL(url).origin}/robots.txt`);
+            if (robotsRes.ok) {
+                const robotsTxt = await robotsRes.text();
+                // Check if they BLOCK AI bots
+                const blocksGPT = /User-agent:.*GPTBot\s*Disallow:\s*\//i.test(robotsTxt);
+                const blocksCC = /User-agent:.*CCBot\s*Disallow:\s*\//i.test(robotsTxt);
+
+                if (!blocksGPT && !blocksCC) {
+                    vulnerabilities.push({
+                        type: 'low',
+                        name: 'AI Training Permitted',
+                        description: 'robots.txt allows GPTBot (OpenAI) and CCBot to scrape site content for model training.',
+                        fix: 'Add "User-agent: GPTBot Disallow: /" to robots.txt if this is private data.'
+                    });
+                }
+            }
+        } catch (e) {
+            // Ignore robots failure
+        }
+
+        // C. Common AI Endpoints (Recon)
+        const commonEndpoints = ['/api/chat', '/api/completion', '/api/generate', '/v1/chat/completions'];
+        const endpointChecks = await Promise.all(commonEndpoints.map(async (ep) => {
+            try {
+                const checkUrl = new URL(ep, url).toString();
+                const res = await fetch(checkUrl, { method: 'OPTIONS' });
+                return res.status !== 404 ? ep : null;
+            } catch { return null; }
+        }));
+
+        const foundEndpoints = endpointChecks.filter(e => e !== null);
+        if (foundEndpoints.length > 0) {
+            vulnerabilities.push({
+                type: 'medium',
+                name: 'Exposed AI Endpoints',
+                description: `Publicly accessible API routes detected: ${foundEndpoints.join(', ')}. Ensure they are rate-limited and authenticated.`,
+                fix: 'Verify authentication middleware protects these routes.'
+            });
+        }
+
+        // D. HSTS (Base Security)
+        if (url.startsWith('https') && !headers.get('strict-transport-security')) {
+            vulnerabilities.push({
+                type: 'low',
                 name: 'Missing HSTS',
-                description: 'HTTP Strict Transport Security is missing. Users can be downgraded to HTTP.',
-                fix: 'Enable HSTS with long max-age (e.g., max-age=31536000).'
+                description: 'Standard security header missing. Recommended for all secure apps.',
+                fix: 'Enable HSTS.'
             });
         }
 
-        // CSP (Medium Risk)
-        if (!headers.get('content-security-policy')) {
-            vulnerabilities.push({
-                type: 'medium',
-                name: 'No Content Security Policy',
-                description: 'Site lacks CSP, increasing XSS and Injection risks.',
-                fix: 'Implement a strict Content-Security-Policy.'
-            });
-        }
-
-        // X-Frame-Options (Medium Risk)
-        if (!headers.get('x-frame-options')) {
-            vulnerabilities.push({
-                type: 'medium',
-                name: 'Clickjacking Risk',
-                description: 'Missing X-Frame-Options header allows site to be embedded in iframes.',
-                fix: 'Set X-Frame-Options to DENY or SAMEORIGIN.'
-            });
-        }
-
-        // X-Content-Type-Options (Low Risk)
-        if (!headers.get('x-content-type-options')) {
-            vulnerabilities.push({
-                type: 'low',
-                name: 'MIME Sniffing Risk',
-                description: 'Missing X-Content-Type-Options: nosniff header.',
-                fix: 'Set X-Content-Type-Options to nosniff.'
-            });
-        }
-
-        // Referrer-Policy (Low Risk)
-        if (!headers.get('referrer-policy')) {
-            vulnerabilities.push({
-                type: 'low',
-                name: 'Missing Referrer Policy',
-                description: 'Controls how much referrer information is sent with requests.',
-                fix: 'Set Referrer-Policy to strict-origin-when-cross-origin.'
-            });
-        }
-
-        // Server Leakage (Low Risk) - Only if verbose
-        const serverHeader = headers.get('server');
-        if (serverHeader && serverHeader.length > 10) {
-            vulnerabilities.push({
-                type: 'low',
-                name: 'Server Info Leak',
-                description: `Server header exposes detailed technology: ${serverHeader}`,
-                fix: 'Suppress or obscure the Server header.'
-            });
-        }
-
-        // 5. CALCULATE SCORE & GRADE
+        // 5. CALCULATE SCORE
         let score = 100;
         vulnerabilities.forEach(v => {
-            if (v.type === 'high') score -= 25;   // Was 30
-            if (v.type === 'medium') score -= 10; // Was 15
-            if (v.type === 'low') score -= 5;     // Was 5
+            if (v.type === 'high') score -= 40;
+            if (v.type === 'medium') score -= 20;
+            if (v.type === 'low') score -= 5;
         });
         score = Math.max(0, score);
 
         let grade = 'A';
         if (score < 90) grade = 'B';
-        if (score < 80) grade = 'C';
-        if (score < 70) grade = 'D';
-        if (score < 60) grade = 'F';
+        if (score < 70) grade = 'C';
+        if (score < 50) grade = 'D';
+        if (score < 30) grade = 'F';
 
         const finalTechStack = [...new Set(techStack)];
 

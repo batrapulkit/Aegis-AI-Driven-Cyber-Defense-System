@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Send, Shield, Siren, Loader2, Terminal, Sparkles, AlertTriangle, Zap, Target, Brain, Database, Fish, Briefcase, Lock, FileCode } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -117,9 +118,15 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
     setIsAnalyzing(true);
     setResult(null);
 
+    const isLogData = analysisText.trim().startsWith('[') || analysisText.trim().includes('"timestamp"');
+    console.log("Analyzing with logMode:", isLogData, "Input start:", analysisText.substring(0, 20));
+
     try {
       const { data, error } = await supabase.functions.invoke('analyze-prompt', {
-        body: { prompt: analysisText },
+        body: {
+          prompt: analysisText,
+          logMode: isLogData
+        },
       });
 
       if (error) throw error;
@@ -230,7 +237,7 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
                   onClick={() => loadScenario(s)}
                   className="flex items-start gap-3 p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 hover:border-neon-cyan/50 text-left transition-all group"
                 >
-                  <div className={`p-2 rounded-md bg-black/20 ${s.color}`}>
+                  <div className={`p - 2 rounded - md bg - black / 20 ${s.color} `}>
                     <s.icon className="w-5 h-5" />
                   </div>
                   <div>
@@ -315,6 +322,15 @@ export function LiveInterceptConsole({ onScanComplete, autoRunTrigger = 0 }: Liv
                   </div>
                   <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-neon-green flex items-center justify-center pulse-green">
                     <span className="text-background text-xs font-bold">✓</span>
+                  </div>
+                </div>
+              ) : result.verdict === "WARNING" ? (
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-orange to-yellow-500 flex items-center justify-center animate-pulse">
+                    <AlertTriangle className="w-8 h-8 text-background" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-neon-orange flex items-center justify-center pulse-orange">
+                    <AlertTriangle className="w-3 h-3 text-background" />
                   </div>
                 </div>
               ) : (

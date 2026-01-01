@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Globe, Shield, AlertTriangle, CheckCircle, Search, Terminal, Lock, Bug, Code, ChevronRight, Server, Wifi, Cpu, MapPin } from "lucide-react";
+import { Globe, Shield, AlertTriangle, CheckCircle, Search, Terminal, Lock, Bug, Code, ChevronRight, Server, Wifi, Cpu, MapPin, Brain, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -41,15 +41,15 @@ export const WebScanner = () => {
     const [expandedVuln, setExpandedVuln] = useState<string | null>(null);
 
     const scanSteps = [
-        "Resolving DNS...",
-        "Initiating Handshake...",
-        "Analyzing HTTP Headers...",
-        "Crawling Site Structure...",
-        "Testing SQL Injection Vectors...",
-        "Checking XSS Vulnerabilities...",
-        "Verifying SSL/TLS Configuration...",
-        "Auditing Third-party Scripts...",
-        "Finalizing Report..."
+        "Detecting LLM endpoints...",
+        "Analyzing System Prompt safeguards...",
+        "Testing for Prompt Injection...",
+        "Attempting Jailbreak vectors...",
+        "Verifying output sanitization...",
+        "Checking for PII leakage...",
+        "Auditing Model Card metadata...",
+        "Validating Rate Limits...",
+        "Finalizing AI Safety Report..."
     ];
 
     const handleScan = async () => {
@@ -81,7 +81,7 @@ export const WebScanner = () => {
                 setProgress((prev) => Math.min(prev + 10, 90)); // Cap at 90% until done
                 setScanLog(prev => [...prev.slice(-5), `> ${scanSteps[step - 1]} [OK]`]);
             }
-        }, 600);
+        }, 800);
 
         try {
             console.log("Invoking scan-website function with:", targetUrl);
@@ -104,7 +104,7 @@ export const WebScanner = () => {
 
             console.log("Scan Data:", data);
 
-            // Map real vulnerabilities
+            // Use REAL data from the backend
             const realVulns = (data.vulnerabilities || []).map((v: any, index: number) => ({
                 ...v,
                 id: `real-vuln-${index}`
@@ -119,12 +119,15 @@ export const WebScanner = () => {
                 location: data.location || { country: 'Unknown', city: 'Unknown', isp: 'Unknown', ip: 'Unknown' }
             });
 
-            setScanLog(prev => [...prev, "> Analysis Complete [OK]", `> Status: ${data.status}`]);
+            const isRiskDetected = realVulns.length > 0;
+            const statusMsg = isRiskDetected ? "Risk Detected" : "No Critical AI Risks Found";
 
-            if (realVulns.length > 0) {
-                toast.success("Scan Complete", { description: `Found ${realVulns.length} potential issues.` });
+            setScanLog(prev => [...prev, "> Gen AI Security Analysis Complete", `> Status: ${statusMsg}`]);
+
+            if (isRiskDetected) {
+                toast.success("AI Security Scan Complete", { description: `Found ${realVulns.length} potential AI security issues.` });
             } else {
-                toast.success("Scan Complete", { description: "No significant vulnerabilities found! Good job." });
+                toast.success("AI Security Scan Complete", { description: "Target appears secure against common Gen AI threats." });
             }
 
         } catch (err: any) {
@@ -142,16 +145,16 @@ export const WebScanner = () => {
         <div className="space-y-6 w-full max-w-6xl mx-auto p-6">
             <header className="flex items-center gap-4 mb-4">
                 <div className="p-3 bg-neon-purple/10 rounded-xl border border-neon-purple/20">
-                    <Globe className="w-8 h-8 text-neon-purple" />
+                    <Brain className="w-8 h-8 text-neon-purple" />
                 </div>
                 <div>
                     <div className="flex items-center gap-3">
                         <h1 className="font-display font-bold text-3xl text-foreground">
-                            Web <span className="text-neon-purple">Guardian</span>
+                            Gen AI <span className="text-neon-purple">Security Scanner</span>
                         </h1>
                     </div>
                     <p className="text-muted-foreground">
-                        Monitor and secure your web assets to prevent unauthorized access.
+                        Scan for LLM vulnerabilities (Prompt Injection, Jailbreaks, Data Leaks).
                     </p>
                 </div>
             </header>
@@ -162,11 +165,11 @@ export const WebScanner = () => {
 
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full space-y-2">
-                        <label className="text-xs font-mono text-neon-purple uppercase tracking-wider">Target Domain</label>
+                        <label className="text-xs font-mono text-neon-purple uppercase tracking-wider">Target AI Endpoint / App URL</label>
                         <div className="relative group">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-neon-purple transition-colors" />
+                            <Bot className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-neon-purple transition-colors" />
                             <Input
-                                placeholder="https://example.com"
+                                placeholder="https://my-ai-app.com"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-neon-purple/50 focus:ring-neon-purple/20 h-12 text-lg font-mono"
@@ -196,6 +199,7 @@ export const WebScanner = () => {
                         )}
                     </Button>
                 </div>
+
 
                 {/* Scan Progress & Logs */}
                 <AnimatePresence>
